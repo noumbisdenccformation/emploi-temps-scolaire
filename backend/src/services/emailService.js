@@ -1,18 +1,33 @@
 const crypto = require('crypto');
+const resendService = require('./resendService');
 
 // Stockage temporaire des codes de vérification
 const verificationCodes = new Map();
 
 const emailService = {
+  // Envoyer email de vérification
+  async sendVerificationEmail(email, code) {
+    try {
+      const subject = '🔐 Code de vérification - Emploi du Temps';
+      const message = `Bonjour,\n\nVotre code de vérification est: ${code}\n\nCe code expire dans 10 minutes.\n\nCordialement,\nÉquipe Emploi du Temps Scolaire`;
+      
+      await resendService.sendEmail(email, subject, message);
+      return true;
+    } catch (error) {
+      console.error('Erreur envoi email:', error);
+      return false;
+    }
+  },
+
   // Générer code de vérification
-  generateVerificationCode(email) {
-    const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6 chiffres
-    const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
+  async generateVerificationCode(email) {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = Date.now() + 10 * 60 * 1000;
     
     verificationCodes.set(email, { code, expires });
     
-    // Simulation d'envoi email (remplacer par vraie API email)
-    console.log(`Code de vérification pour ${email}: ${code}`);
+    // Envoyer l'email
+    await this.sendVerificationEmail(email, code);
     
     return code;
   },
