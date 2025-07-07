@@ -50,10 +50,10 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, async () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
-  await testConnection();
   
-  // Synchronisation des modèles (dev uniquement)
+  // Connexion DB désactivée pour cette version
   if (process.env.NODE_ENV === 'development') {
+    await testConnection();
     await sequelize.sync({ alter: true });
     console.log('Base de données synchronisée');
   }
