@@ -1,41 +1,68 @@
-// Service email avec fetch (plus simple)
+// Service email Resend corrigé
+const https = require('https');
+
 const resendService = {
   async sendEmail(to, subject, text) {
     const apiKey = process.env.RESEND_API_KEY;
     
     if (!apiKey || apiKey === 'demo-key') {
-      // Mode démo
-      console.log(`\n📧 EMAIL (MODE DÉMO)`);
-      console.log(`À: ${to}`);
-      console.log(`Sujet: ${subject}`);
-      console.log(`Code: ${text.match(/\d{6}/)?.[0] || 'N/A'}`);
-      console.log(`========================\n`);
+      console.log(`\n📧 EMAIL (MODE DÉMO) - Code: ${text.match(/\d{6}/)?.[0]}\n`);
       return true;
     }
 
-    try {
-      // Utiliser node-fetch ou équivalent
-      const emailPayload = {
+    return new Promise((resolve, reject) => {
+      const emailData = {
         from: 'Emploi du Temps <onboarding@resend.dev>',
         to: [to],
         subject: subject,
         text: text
       };
       
-      console.log('📤 Payload Resend:', JSON.stringify(emailPayload, null, 2));
+      const postData = JSON.stringify(emailData);
+      console.log('📤 Envoi email à:', to);
       
-      // Simulation réussie pour éviter l'erreur JSON
-      console.log('✅ Email simulé envoyé avec succès');
-      return true;
-      
-    } catch (error) {
-      console.error('❌ Erreur Resend:', error);
-      throw error;
-    }
+      const options = {
+        hostname: 'api.resend.com',
+        port: 443,
+        path: '/emails',
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(postData)
+        }
+      };
+
+      const req = https.request(options, (res) => {
+        let responseData = '';
+        
+        res.on('data', (chunk) => {
+          responseData += chunk;
+        });
+        
+        res.on('end', () => {
+          console.log(`📊 Status: ${res.statusCode}`);
+          console.log(`📝 Response: ${responseData}`);
+          
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            console.log('✅ Email envoyé avec succès!');
+            resolve(true);
+          } else {
+            console.error(`❌ Erreur ${res.statusCode}: ${responseData}`);
+            reject(new Error(`HTTP ${res.statusCode}: ${responseData}`));
+          }
+        });
+      });
+
+      req.on('error', (error) => {
+        console.error('❌ Erreur requête:', error);
+        reject(error);
+      });
+
+      req.write(postData);
+      req.end();
+    });
   }
 };
 
 module.exports = resendService;
-
-// TODO: Installer node-fetch pour vraie implémentation
-// npm install node-fetch@2
