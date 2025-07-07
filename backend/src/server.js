@@ -10,8 +10,13 @@ const PORT = process.env.PORT || 3001;
 // Middleware de sécurité
 app.use(helmet());
 app.use(cors({
-  origin: ['http://localhost:4200', 'https://emploi-temps-frontend.vercel.app'],
-  credentials: true
+  origin: [
+    'http://localhost:4200',
+    'https://emploi-temps-scolaire.vercel.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Middleware pour parser JSON
