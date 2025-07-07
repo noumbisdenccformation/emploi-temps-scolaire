@@ -28,18 +28,22 @@ const authController = {
         return res.status(400).json({ error: 'Email ou téléphone déjà utilisé' });
       }
 
+      // Hasher le mot de passe avant création
+      const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+      
       // Créer utilisateur
       const user = await UserDB.create({
-        firstName, lastName, email, phone, password
+        firstName, lastName, email, phone, password: hashedPassword
       });
-      
-      await user.hashPassword();
-      await user.save();
 
       res.status(201).json({ message: 'Inscription réussie' });
     } catch (error) {
       console.error('Registration error:', error);
-      res.status(500).json({ error: 'Erreur serveur' });
+      // Fallback vers stockage fichier si DB indisponible
+      if (error.name === 'SequelizeConnectionError') {
+        return res.status(503).json({ error: 'Base de données temporairement indisponible' });
+      }
+      res.status(500).json({ error: 'Erreur serveur: ' + error.message });
     }
   },
 
