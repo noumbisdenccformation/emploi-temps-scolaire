@@ -35,6 +35,9 @@ app.get('/', (req, res) => {
 // Routes d'authentification
 app.use('/api/auth', require('./routes/auth'));
 
+// Routes admin
+app.use('/api/admin', require('./routes/admin'));
+
 // Routes API
 app.use('/api/teachers', require('./routes/teachers'));
 app.use('/api/subjects', require('./routes/subjects'));
@@ -56,10 +59,12 @@ app.use((err, req, res, next) => {
 app.listen(PORT, async () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
   
-  // Connexion DB désactivée pour cette version
-  if (process.env.NODE_ENV === 'development') {
+  // Activer la base de données
+  try {
     await testConnection();
     await sequelize.sync({ alter: true });
     console.log('Base de données synchronisée');
+  } catch (error) {
+    console.log('Base de données non disponible, mode fichier activé');
   }
 });
