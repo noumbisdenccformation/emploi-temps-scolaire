@@ -7,7 +7,7 @@ const resendService = {
     const apiKey = process.env.RESEND_API_KEY || 'demo-key';
     
     const emailData = JSON.stringify({
-      from: 'noreply@emploi-temps.com',
+      from: 'onboarding@resend.dev',
       to: [to],
       subject: subject,
       text: text
@@ -37,6 +37,9 @@ const resendService = {
         return;
       }
 
+      console.log('📤 Envoi à Resend:', emailData);
+      console.log('🔗 Headers:', options.headers);
+      
       const req = https.request(options, (res) => {
         let data = '';
         res.on('data', (chunk) => data += chunk);
