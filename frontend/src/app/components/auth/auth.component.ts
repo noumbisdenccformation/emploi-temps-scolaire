@@ -179,18 +179,30 @@ export class AuthComponent {
   }
 
   register() {
+    console.log('Form valid:', this.registerForm.valid);
+    console.log('Password mismatch:', this.passwordMismatch);
+    console.log('Form values:', this.registerForm.value);
+    
     if (this.registerForm.valid && !this.passwordMismatch) {
       const { confirmPassword, country, phone, ...userData } = this.registerForm.value;
       const fullPhone = country + phone;
       const dataToSend = { ...userData, phone: fullPhone };
       
+      console.log('Sending data:', dataToSend);
+      
       this.authService.register(dataToSend).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('Success:', response);
           this.isLogin = true;
           this.error = 'Inscription réussie ! Connectez-vous maintenant.';
         },
-        error: (err) => this.error = err.error.error
+        error: (err) => {
+          console.error('Error:', err);
+          this.error = err.error?.error || 'Erreur de connexion';
+        }
       });
+    } else {
+      this.error = 'Veuillez remplir tous les champs correctement';
     }
   }
 }
