@@ -24,7 +24,8 @@ class User {
   }
 
   static isValidPhone(phone) {
-    return /^[+]?[\d\s\-()]{8,15}$/.test(phone);
+    // Accepter format international avec indicatif pays
+    return /^\+\d{1,4}\d{6,14}$/.test(phone.replace(/[\s\-()]/g, ''));
   }
 }
 

@@ -41,9 +41,20 @@ import { AuthService } from '../../services/auth.service';
           <mat-form-field>
             <input matInput placeholder="Email" formControlName="email" type="email">
           </mat-form-field>
-          <mat-form-field>
-            <input matInput placeholder="Téléphone" formControlName="phone">
-          </mat-form-field>
+          <div class="form-row">
+            <mat-form-field>
+              <mat-select placeholder="Pays" formControlName="country">
+                <mat-option value="+237">🇨🇲 Cameroun (+237)</mat-option>
+                <mat-option value="+33">🇫🇷 France (+33)</mat-option>
+                <mat-option value="+1">🇺🇸 USA (+1)</mat-option>
+                <mat-option value="+225">🇨🇮 Côte d'Ivoire (+225)</mat-option>
+                <mat-option value="+221">🇸🇳 Sénégal (+221)</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput placeholder="Numéro" formControlName="phone">
+            </mat-form-field>
+          </div>
           <mat-form-field>
             <input matInput placeholder="Mot de passe (6 caractères min)" formControlName="password" type="password">
           </mat-form-field>
@@ -130,6 +141,7 @@ export class AuthComponent {
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
+    country: ['+237', Validators.required],
     phone: ['', Validators.required],
     password: ['', [Validators.required, Validators.minLength(6)]],
     confirmPassword: ['', Validators.required]
@@ -158,8 +170,11 @@ export class AuthComponent {
 
   register() {
     if (this.registerForm.valid && !this.passwordMismatch) {
-      const { confirmPassword, ...userData } = this.registerForm.value;
-      this.authService.register(userData).subscribe({
+      const { confirmPassword, country, phone, ...userData } = this.registerForm.value;
+      const fullPhone = country + phone;
+      const dataToSend = { ...userData, phone: fullPhone };
+      
+      this.authService.register(dataToSend).subscribe({
         next: () => {
           this.isLogin = true;
           this.error = 'Inscription réussie ! Connectez-vous maintenant.';
