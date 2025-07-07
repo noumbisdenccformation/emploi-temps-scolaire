@@ -8,13 +8,18 @@ const emailService = {
   // Envoyer email de vérification
   async sendVerificationEmail(email, code) {
     try {
+      console.log(`📧 Tentative envoi email à: ${email}`);
+      console.log(`🔑 Code généré: ${code}`);
+      console.log(`🔧 RESEND_API_KEY présente: ${process.env.RESEND_API_KEY ? 'OUI' : 'NON'}`);
+      
       const subject = '🔐 Code de vérification - Emploi du Temps';
       const message = `Bonjour,\n\nVotre code de vérification est: ${code}\n\nCe code expire dans 10 minutes.\n\nCordialement,\nÉquipe Emploi du Temps Scolaire`;
       
-      await resendService.sendEmail(email, subject, message);
+      const result = await resendService.sendEmail(email, subject, message);
+      console.log(`✅ Email envoyé avec succès: ${result}`);
       return true;
     } catch (error) {
-      console.error('Erreur envoi email:', error);
+      console.error('❌ Erreur envoi email:', error);
       return false;
     }
   },
