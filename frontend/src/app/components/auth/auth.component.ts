@@ -45,10 +45,20 @@ import { AuthService } from '../../services/auth.service';
             <mat-form-field>
               <mat-select placeholder="Pays" formControlName="country">
                 <mat-option value="+237">🇨🇲 Cameroun (+237)</mat-option>
-                <mat-option value="+33">🇫🇷 France (+33)</mat-option>
-                <mat-option value="+1">🇺🇸 USA (+1)</mat-option>
                 <mat-option value="+225">🇨🇮 Côte d'Ivoire (+225)</mat-option>
                 <mat-option value="+221">🇸🇳 Sénégal (+221)</mat-option>
+                <mat-option value="+226">🇧🇫 Burkina Faso (+226)</mat-option>
+                <mat-option value="+223">🇲🇱 Mali (+223)</mat-option>
+                <mat-option value="+227">🇳🇪 Niger (+227)</mat-option>
+                <mat-option value="+228">🇹🇬 Togo (+228)</mat-option>
+                <mat-option value="+229">🇧🇯 Bénin (+229)</mat-option>
+                <mat-option value="+224">🇬🇳 Guinée (+224)</mat-option>
+                <mat-option value="+240">🇬🇶 Guinée Équatoriale (+240)</mat-option>
+                <mat-option value="+235">🇹🇩 Tchad (+235)</mat-option>
+                <mat-option value="+236">🇨🇫 Centrafrique (+236)</mat-option>
+                <mat-option value="+242">🇨🇬 Congo (+242)</mat-option>
+                <mat-option value="+241">🇬🇦 Gabon (+241)</mat-option>
+                <mat-option value="+269">🇰🇲 Comores (+269)</mat-option>
               </mat-select>
             </mat-form-field>
             <mat-form-field>
