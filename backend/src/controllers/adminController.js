@@ -1,13 +1,32 @@
-const UserDB = require('../models/UserDB');
+const fs = require('fs');
+const path = require('path');
+
+// Load users from file
+const usersFile = path.join(__dirname, '../data/users.json');
+function loadUsers() {
+  try {
+    if (fs.existsSync(usersFile)) {
+      return JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+    }
+  } catch (error) {
+    console.error('Error loading users:', error);
+  }
+  return [];
+}
 
 const adminController = {
   // Récupérer tous les utilisateurs pour prospection
   async getUsers(req, res) {
     try {
-      const users = await UserDB.findAll({
-        attributes: ['id', 'firstName', 'lastName', 'email', 'phone', 'createdAt', 'lastLogin'],
-        order: [['createdAt', 'DESC']]
-      });
+      const users = loadUsers();
+      
+      const cleanUsers = users.map(u => ({
+        firstName: u.firstName,
+        lastName: u.lastName,
+        email: u.email,
+        phone: u.phone,
+        createdAt: u.createdAt
+      }));
       
       const stats = {
         total: users.length,
@@ -15,7 +34,7 @@ const adminController = {
         thisWeek: users.filter(u => new Date(u.createdAt) > new Date(Date.now() - 7*24*60*60*1000)).length
       };
 
-      res.json({ users, stats });
+      res.json({ users: cleanUsers, stats });
     } catch (error) {
       res.status(500).json({ error: 'Erreur serveur' });
     }
@@ -24,9 +43,7 @@ const adminController = {
   // Export CSV pour prospection
   async exportUsers(req, res) {
     try {
-      const users = await UserDB.findAll({
-        attributes: ['firstName', 'lastName', 'email', 'phone', 'createdAt']
-      });
+      const users = loadUsers();
 
       const csv = [
         'Prénom,Nom,Email,Téléphone,Date inscription',
