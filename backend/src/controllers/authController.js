@@ -39,6 +39,7 @@ try {
 const authController = {
   async register(req, res) {
     try {
+      console.log('📨 Inscription reçue:', req.body);
       const { email, phone, password, firstName, lastName } = req.body;
 
       if (!User.isValidEmail(email)) {
@@ -85,7 +86,7 @@ const authController = {
       saveUsers();
 
       // Générer et envoyer code de vérification
-      const verificationCode = emailService.generateVerificationCode(email);
+      const verificationCode = await emailService.generateVerificationCode(email);
       
       res.status(201).json({ 
         message: 'Inscription réussie ! Vérifiez votre email.',
@@ -93,7 +94,7 @@ const authController = {
         email: email
       });
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('❌ Registration error:', error);
       res.status(500).json({ error: 'Erreur: ' + error.message });
     }
   },
