@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const crypto = require('crypto');
+const emailService = require('../services/emailService');
 const fs = require('fs');
 const path = require('path');
 
@@ -83,7 +84,14 @@ const authController = {
       users.push(user);
       saveUsers();
 
-      res.status(201).json({ message: 'Inscription réussie' });
+      // Générer et envoyer code de vérification
+      const verificationCode = emailService.generateVerificationCode(email);
+      
+      res.status(201).json({ 
+        message: 'Inscription réussie ! Vérifiez votre email.',
+        requiresVerification: true,
+        email: email
+      });
     } catch (error) {
       console.error('Registration error:', error);
       res.status(500).json({ error: 'Erreur: ' + error.message });
@@ -116,8 +124,53 @@ const authController = {
         return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
       }
 
+      // Vérifier si l'email est vérifié (simulation)
       const token = crypto.randomBytes(32).toString('hex');
-      res.json({ token, user: { email, firstName: user.firstName } });
+      res.json({ 
+        token, 
+        user: { email, firstName: user.firstName },
+        emailVerified: true // Pour cette version
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Erreur: ' + error.message });
+    }
+  },
+
+  // Vérifier le code email
+  async verifyEmail(req, res) {
+    try {
+      const { email, code } = req.body;
+      
+      const result = emailService.verifyCode(email, code);
+      
+      if (!result.valid) {
+        return res.status(400).json({ error: result.error });
+      }
+      
+      // Marquer l'email comme vérifié dans le stockage
+      const userIndex = users.findIndex(u => u.email === email);
+      if (userIndex !== -1) {
+        users[userIndex].emailVerified = true;
+        saveUsers();
+      }
+      
+      res.json({ message: 'Email vérifié avec succès' });
+    } catch (error) {
+      res.status(500).json({ error: 'Erreur: ' + error.message });
+    }
+  },
+
+  // Renvoyer code de vérification
+  async resendCode(req, res) {
+    try {
+      const { email } = req.body;
+      
+      if (!emailService.isValidEmailFormat(email)) {
+        return res.status(400).json({ error: 'Email invalide' });
+      }
+      
+      const code = emailService.generateVerificationCode(email);
+      res.json({ message: 'Code renvoyé' });
     } catch (error) {
       res.status(500).json({ error: 'Erreur: ' + error.message });
     }

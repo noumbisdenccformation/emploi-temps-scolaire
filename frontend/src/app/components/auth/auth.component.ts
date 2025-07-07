@@ -79,6 +79,19 @@ import { AuthService } from '../../services/auth.service';
           </button>
         </form>
 
+        <!-- Vérification Email -->
+        <div *ngIf="showVerification" class="verification-section">
+          <h3>Vérifiez votre email</h3>
+          <p>Code envoyé à : {{verificationEmail}}</p>
+          <mat-form-field>
+            <input matInput placeholder="Code de vérification (6 chiffres)" [(ngModel)]="verificationCode" maxlength="6">
+          </mat-form-field>
+          <div class="verification-buttons">
+            <button mat-raised-button color="primary" (click)="verifyEmail()">Vérifier</button>
+            <button mat-button (click)="resendCode()">Renvoyer le code</button>
+          </div>
+        </div>
+
         <div *ngIf="error" [class]="error.includes('réussie') ? 'success' : 'error'">{{error}}</div>
       </div>
     </div>
@@ -136,11 +149,27 @@ import { AuthService } from '../../services/auth.service';
       text-align: center;
       margin-top: 1rem;
     }
+    .verification-section {
+      text-align: center;
+      padding: 2rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin: 1rem 0;
+    }
+    .verification-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
   `]
 })
 export class AuthComponent {
   isLogin = true;
   error = '';
+  showVerification = false;
+  verificationEmail = '';
+  verificationCode = '';
   
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -192,17 +221,41 @@ export class AuthComponent {
       
       this.authService.register(dataToSend).subscribe({
         next: (response) => {
-          console.log('Success:', response);
-          this.isLogin = true;
-          this.error = 'Inscription réussie ! Connectez-vous maintenant.';
+          if (response.requiresVerification) {
+            this.showVerification = true;
+            this.verificationEmail = response.email;
+            this.error = 'Code de vérification envoyé ! (Vérifiez la console pour le code)';
+          } else {
+            this.isLogin = true;
+            this.error = 'Inscription réussie ! Connectez-vous maintenant.';
+          }
         },
         error: (err) => {
-          console.error('Error:', err);
           this.error = err.error?.error || 'Erreur de connexion';
         }
       });
     } else {
       this.error = 'Veuillez remplir tous les champs correctement';
     }
+  }
+
+  verifyEmail() {
+    if (this.verificationCode.length === 6) {
+      this.authService.verifyEmail(this.verificationEmail, this.verificationCode).subscribe({
+        next: () => {
+          this.showVerification = false;
+          this.isLogin = true;
+          this.error = 'Email vérifié ! Vous pouvez maintenant vous connecter.';
+        },
+        error: (err) => this.error = err.error?.error || 'Code incorrect'
+      });
+    }
+  }
+
+  resendCode() {
+    this.authService.resendCode(this.verificationEmail).subscribe({
+      next: () => this.error = 'Code renvoyé ! (Vérifiez la console)',
+      error: (err) => this.error = err.error?.error || 'Erreur'
+    });
   }
 }

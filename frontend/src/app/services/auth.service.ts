@@ -35,4 +35,12 @@ export class AuthService {
   getToken(): string | null {
     return localStorage.getItem('token');
   }
+
+  verifyEmail(email: string, code: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/verify-email`, { email, code });
+  }
+
+  resendCode(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/resend-code`, { email });
+  }
 }
