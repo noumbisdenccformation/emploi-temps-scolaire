@@ -1,7 +1,33 @@
 const User = require('../models/User');
 const crypto = require('crypto');
 
-const users = [];
+const fs = require('fs');
+const path = require('path');
+
+const usersFile = path.join(__dirname, '../data/users.json');
+
+// Charger les utilisateurs existants
+let users = [];
+try {
+  if (fs.existsSync(usersFile)) {
+    users = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+  }
+} catch (error) {
+  console.log('Fichier utilisateurs non trouvé, création d\'un nouveau');
+}
+
+// Sauvegarder les utilisateurs
+function saveUsers() {
+  try {
+    const dir = path.dirname(usersFile);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
+  } catch (error) {
+    console.error('Erreur sauvegarde:', error);
+  }
+}
 
 const authController = {
   async register(req, res) {
@@ -24,6 +50,7 @@ const authController = {
     const user = new User(email, phone, password, firstName, lastName);
     await user.hashPassword();
     users.push(user);
+    saveUsers(); // Sauvegarder
 
     res.status(201).json({ message: 'Inscription réussie' });
   },
